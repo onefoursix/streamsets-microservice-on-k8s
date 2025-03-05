@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: streamsets-deployment-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+    vendor: streamsets-sch
+    env: na01
+  name: streamsets-deployment-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+  namespace: ns1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streamsets-deployment-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+  template:
+    metadata:
+      labels:
+        app: streamsets-deployment-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+        vendor: streamsets-sch
+        env: na01
+    spec:
+      containers:
+        - env:
+            - name: STREAMSETS_DEPLOYMENT_ID
+              value: 11def29c-ad91-416a-b1ab-1df8e6ebda5d:8030c2e9-1a39-11ec-a5fe-97c8d4369386
+            - name: STREAMSETS_DEPLOYMENT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: token
+                  name: streamsets-deployment-secret-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+                  optional: false
+            - name: STREAMSETS_DEPLOYMENT_SCH_URL
+              value: https://na01.hub.streamsets.com
+          image: streamsets/datacollector:JDK17_6.1.1
+          livenessProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /public-rest/ping
+              port: engine-port
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          name: streamsets-engine-11def29c-ad91-416a-b1ab-1df8e6ebda5d
+          ports:
+            - containerPort: 18630
+              name: engine-port
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: "1"
+          startupProbe:
+            failureThreshold: 60
+            httpGet:
+              path: /public-rest/ping
+              port: engine-port
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - mountPath: /resources/is-prime-keystore.p12
+              name: is-prime-keystore
+              subPath: is-prime-keystore.p12
+            - mountPath: /resources/is-prime-keystore-password.txt
+              name: is-prime-keystore-password
+              subPath: is-prime-keystore-password.txt
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: is-prime-keystore
+          secret:
+            secretName: is-prime-keystore
+        - name: is-prime-keystore-password
+          secret:
+            secretName: is-prime-keystore-password

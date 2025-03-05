@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: is-prime
+  namespace: ns1
+  labels:
+    app: is-prime
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: streamsets-deployment-11def29c-ad91-416a-b1ab-1df8e6ebda5d
